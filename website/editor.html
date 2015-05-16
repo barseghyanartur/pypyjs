@@ -8,14 +8,25 @@
 
   <title>PyPy.js</title>
 
-  <!--<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>-->
-  <!--<link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>-->
-  <!--<link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>-->
-  <!--<link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css' rel='stylesheet' type='text/css'>-->
-  <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css">-->
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+  <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
+  <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css">
   <link href='css/ansi.css' rel='stylesheet' type='text/css'>
   <link href='css/console.css' rel='stylesheet' type='text/css'>
   <link href='css/pypyjs.css' rel='stylesheet' type='text/css'>
+  <link href='css/codemirror.css' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+        .CodeMirror {
+            border-top: 1px solid black; border-bottom: 1px solid black;
+        }
+        #console {
+            position: absolute;
+            width: 90%;
+            height: 400px;
+        }
+    </style>
 </head>
 
 <body>
@@ -44,17 +55,28 @@
 
   <div class='container'>
 
-    <p>PyPy.js is an experiment in building a fast and compliant python environment for the web.</p>
+      <p>PyPy.js is an experiment in building a fast and compliant python environment for the web.</p>
 
-    <p>It uses the <a href="http://pypy.org/">PyPy</a> python interpreter, compiled for the web via <a href="http://emscripten.org">emscripten</a>, with a custom JIT backend that emits <a href="http://asmjs.org">asm.js</a> code at runtime.</p>
+      <p>It uses the <a href="http://pypy.org/">PyPy</a> python interpreter, compiled for the web via
+          <a href="http://emscripten.org">emscripten</a>, with a custom JIT backend that emits
+          <a href="http://asmjs.org">asm.js</a> code at runtime.</p>
 
-    <p>Try it out below, or see the links above for benchmarks and download information.</p>
+      <p>Try it out below, or see the links above for benchmarks and download information.</p>
 
-    <p>&nbsp;</p>
+      <textarea id="editor">print "Hello PyPy-JS!"
+print
 
-    <div id="console"></div>
+for i in range(50):
+    print i,
 
-    <p>&nbsp;</p>
+print "\n"
+
+import sys
+print sys.version
+      </textarea>
+      <h3 id="loading">loading...</h3>
+      <button id="run">run</button>
+      <div id="console"></div>
 
   </div>
 
@@ -63,7 +85,21 @@
   <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/jquery-migrate-1.2.1.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/jqconsole.min.js" type="text/javascript" charset="utf-8"></script>
-  <script>
+  <script src="js/codemirror.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/python.js"></script>
+  <script type="text/javascript">
+    jQuery( document ).ready(function( $ ) {
+        $("#run").hide();
+        CodeMirrorEditor = CodeMirror.fromTextArea($("#editor")[0], {
+            mode: {name: "text/x-cython",
+                   version: 2,
+                   singleLineStringErrors: false},
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true
+        });
+    });
+
     $(function () {
       // Global vars, for easy debugging in console.
       window.jqconsole = $('#console').jqconsole('', '>>> ');
@@ -78,38 +114,25 @@
       vm.ready.then(function() {
         jqconsole.Reset();
         vm.stdout('Welcome to PyPy.js!\n')
-        // Create an 'InteractiveConsole' to simulate the python shell.
-        vm.eval('import code').then(function() {
-          vm.eval('c = code.InteractiveConsole()').then(function() {
-            // Prompt for input, send it to the console, rinse, repeat.
-            window.doPrompt = function () {
-              jqconsole.Prompt(true, function (input) {
-                var code = input.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-                code = 'r = c.push(\'' + code + '\')';
-                vm.eval(code).then(function() {
-                  return vm.get('r').then(function(r) {
-                    // r==1 means that it's a multi-line definition,
-                    // so change the prompt accordingly.
-                    if (r) {
-                      jqconsole.SetPromptLabel("... ");
-                    } else {
-                      jqconsole.SetPromptLabel(">>> ");
-                    }
-                    setTimeout(doPrompt, 0);
-                  });
-                });
-              });
-            };
-            doPrompt();
-          });
+
+        $("#loading").slideUp();
+        $("#run").slideDown("slow");
+
+        $("#run").click(function() {
+            var code=CodeMirrorEditor.getValue();
+            jqconsole.Reset();
+            vm.eval(code).then(function() {
+                vm.stdout('OK');
+            });
         });
+
       },
       function(err) {
         jqconsole.Write('ERROR: ' + err);
       });
     });
   </script>
-  <!--<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js'></script>-->
+  <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js'></script>
 </body>
 
 </html>
