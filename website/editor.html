@@ -26,6 +26,9 @@
             width: 90%;
             height: 400px;
         }
+        #run_info {
+            display:none;
+        }
     </style>
 </head>
 
@@ -68,7 +71,7 @@ import sys
 print sys.version
       </textarea>
       <h3 id="loading">loading...</h3>
-      <button id="run">run</button>
+      <button id="run">run</button><div id="run_info"></div>
       <div id="console"></div>
 
   </div>
@@ -113,14 +116,14 @@ print sys.version
         $("#run").slideDown("slow");
 
         $("#run").click(function() {
+            $("#run_info").text("start vm...");
+            $("#run_info").attr("style", "display:inline");
             var code=CodeMirrorEditor.getValue();
             jqconsole.Reset();
-            // vm.exec(code).then(function() {
-            vm._execute_source(code).then(function() {
-                vm.stdout('OK');
-            },function() {
-                vm.stdout('ERROR');
-            });
+            var start_time = new Date();
+            vm._execute_source(code)
+            var duration = new Date() - start_time;
+            $("#run_info").text("Run in " + duration + "ms");
         });
 
       },
