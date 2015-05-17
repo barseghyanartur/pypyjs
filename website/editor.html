@@ -125,6 +125,8 @@ print sys.version
             // vm.exec(code).then(function() {
             vm._execute_source(code).then(function() {
                 vm.stdout('OK');
+            },function() {
+                vm.stdout('ERROR');
             });
         });
 
