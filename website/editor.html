@@ -122,7 +122,8 @@ print sys.version
         $("#run").click(function() {
             var code=CodeMirrorEditor.getValue();
             jqconsole.Reset();
-            vm.exec(code).then(function() {
+            // vm.exec(code).then(function() {
+            vm._execute_source(code).then(function() {
                 vm.stdout('OK');
             });
         });
