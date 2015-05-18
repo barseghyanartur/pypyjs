@@ -13,6 +13,7 @@ from __future__ import absolute_import, print_function
 import difflib
 import os
 import posixpath
+import pprint
 import textwrap
 import traceback
 import unittest
@@ -377,6 +378,15 @@ class EditorTests(BaseSeleniumTestCase):
 
     def test_imports(self):
 
+        # Request indirect the content of /website/js/pypy.js-0.3.0/lib/modules/index.json
+        # startup a VM:
+        self.execute_editor("print 'init done'")
+        self.assertEqual(self._get_console_text(), "init done")
+
+        # get 'vm._allModules'
+        vm_all_modules = self.driver.execute_script("return vm._allModules")
+        # self.out(pprint.pformat(vm_all_modules))
+
         # hack a list of available modules:
         libpath = website_path("js/pypy.js-0.3.0/lib/modules")
         module_names = [
@@ -385,10 +395,16 @@ class EditorTests(BaseSeleniumTestCase):
             if not item.startswith("_") and item.endswith(".py")
         ]
         # module_names = ["sys", "random", "this"]
+        total_count = len(module_names)
+
+        # Check if all collected module_names exist in vm._allModules
+        for module_name in module_names:
+            self.assertIn(module_name, vm_all_modules)
+
+        self.out("\nAll %i modules found in vm._allModules" % total_count)
 
         good = failed = 0
-        total_count = len(module_names)
-        self.out("\nTry to import %i modules:" % total_count)
+        self.out("\nTry to import modules:")
         for no, module_name in enumerate(sorted(module_names)):
             self.out("\n *** %s ***" % module_name)
             code = "import %s;print 'OK'" % module_name
