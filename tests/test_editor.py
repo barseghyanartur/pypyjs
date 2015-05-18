@@ -179,7 +179,8 @@ class EditorTests(BaseSeleniumTestCase):
     def assertEditor(self, code, output):
         run_info = self.execute_editor(code)
         self.assertConsole(output)
-        self.assertNotIn("Failed", run_info)
+        self.assertIn("OK", run_info)
+        self.assertNotIn("Error", run_info)
 
     def test_execute_editor(self, script=None):
         self.execute_editor("""
