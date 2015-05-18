@@ -68,7 +68,6 @@ $(function () {
         $("#loading").slideUp();
         $("#actions").slideDown("slow");
 
-        $("#run_info").attr("style", "display:inline");
         verbose_exec(vm, 'print "Welcome to PyPy.js!"', verbose=false)
         var duration = new Date() - init_start;
         $("#run_info").text("PyPy.js init in " + human_time(duration));
