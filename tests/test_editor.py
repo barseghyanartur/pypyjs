@@ -49,7 +49,7 @@ class BaseSeleniumTestCase(unittest.TestCase):
     def setUpClass(cls):
         super(BaseSeleniumTestCase, cls).setUpClass()
         cls.driver = webdriver.Firefox()
-        cls.driver.set_window_size(1024, 768)
+        cls.driver.set_window_size(800, 900)
         cls.driver.set_window_position(0, 0)
         path = website_path("editor.html")
         cls.editor_url = "file://%s" % path
