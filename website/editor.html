@@ -101,6 +101,22 @@ print sys.version
         });
     });
 
+    function verbose_exec(vm, code) {
+        $("#run_info").text("start vm...");
+        jqconsole.Reset();
+        // console.log("Start code:" + JSON.stringify(code));
+        var start_time = new Date();
+        vm.exec(code).then(function() {
+            var duration = new Date() - start_time;
+            $("#run_info").text("Run in " + duration + "ms (OK)");
+        }, function (err) {
+            // err is an instance of PyPyJS.Error
+            var duration = new Date() - start_time;
+            $("#run_info").text("Run in " + duration + "ms ("+err.name+": "+err.message+"!)");
+            vm.stderr(err.trace); // the human-readable traceback, as a string
+        });
+    }
+
     $(function () {
       // Global vars, for easy debugging in console.
       window.jqconsole = $('#console').jqconsole('', '>>> ');
@@ -113,28 +129,15 @@ print sys.version
       vm.stdout('Loading PyPy.js.\n')
       vm.stdout('It\'s big, so this might take a while...\n\n')
       vm.ready.then(function() {
-        jqconsole.Reset();
-        vm.stdout('Welcome to PyPy.js!\n')
-
         $("#loading").slideUp();
         $("#run").slideDown("slow");
 
+        $("#run_info").attr("style", "display:inline");
+        verbose_exec(vm, 'print "Welcome to PyPy.js!"');
+
         $("#run").click(function() {
-            $("#run_info").text("start vm...");
-            $("#run_info").attr("style", "display:inline");
             var code=CodeMirrorEditor.getValue();
-            jqconsole.Reset();
-            // console.log("Start code:" + JSON.stringify(code));
-            var start_time = new Date();
-            vm.exec(code).then(function() {
-                var duration = new Date() - start_time;
-                $("#run_info").text("Run in " + duration + "ms (OK)");
-            }, function (err) {
-                // err is an instance of PyPyJS.Error
-                var duration = new Date() - start_time;
-                $("#run_info").text("Run in " + duration + "ms ("+err.name+": "+err.message+"!)");
-                vm.stderr(err.trace); // the human-readable traceback, as a string
-            });
+            verbose_exec(vm, code);
         });
       },
       function(err) {
