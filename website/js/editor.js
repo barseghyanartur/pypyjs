@@ -29,54 +29,66 @@ jQuery( document ).ready(function( $ ) {
     });
 });
 
-function verbose_exec(vm, code, verbose=true) {
+function verbose_exec(code, verbose=true) {
     $("#run_info").text("start vm...");
     jqconsole.Reset();
-    // console.log("Start code:" + JSON.stringify(code));
-    var start_time = new Date();
-    vm.exec(code).then(function() {
-        if (verbose) {
-            var duration = new Date() - start_time;
-            $("#run_info").text("Run in " + duration + "ms (OK)");
-        }
-    }, function (err) {
-        // err is an instance of PyPyJS.Error
-        if (verbose) {
-            var duration = new Date() - start_time;
-            $("#run_info").text("Run in " + human_time(duration) + " ("+err.name+": "+err.message+"!)");
-        }
-        vm.stderr(err.trace); // the human-readable traceback, as a string
-    });
-}
 
-$(function () {
     var init_start = new Date();
-
-    // Global vars, for easy debugging in console.
-    window.jqconsole = $('#console').jqconsole('', '>>> ');
     window.vm = new PyPyJS();
 
     // Send all VM output to the console.
     vm.stdout = vm.stderr = function(data) {
         jqconsole.Write(data, 'jqconsole-output');
     }
-
-    // Display a helpful message and twiddle thumbs as it loads.
-    vm.stdout('Loading PyPy.js.\n')
-    vm.stdout('It\'s big, so this might take a while...\n\n')
     vm.ready.then(function() {
-        $("#loading").slideUp();
-        $("#actions").slideDown("slow");
-
-        verbose_exec(vm, 'print "Welcome to PyPy.js!"', verbose=false)
         var duration = new Date() - init_start;
         $("#run_info").text("PyPy.js init in " + human_time(duration));
 
-        $("#run").click(function() {
-            var code=CodeMirrorEditor.getValue();
-            verbose_exec(vm, code);
+        // console.log("Start code:" + JSON.stringify(code));
+        var start_time = new Date();
+        vm.exec(code).then(function() {
+            if (verbose) {
+                var duration = new Date() - start_time;
+                $("#run_info").text("Run in " + duration + "ms (OK)");
+            }
+        }, function (err) {
+            // err is an instance of PyPyJS.Error
+            if (verbose) {
+                var duration = new Date() - start_time;
+                $("#run_info").text("Run in " + human_time(duration) + " ("+err.name+": "+err.message+"!)");
+            }
+            vm.stderr(err.trace); // the human-readable traceback, as a string
         });
+
+
     }, function(err) {
         jqconsole.Write('ERROR: ' + err);
     });
+
+
+
+
+}
+
+$(function () {
+    // Global vars, for easy debugging in console.
+    window.jqconsole = $('#console').jqconsole('', '>>> ');
+
+    $("#run").click(function() {
+        var code=CodeMirrorEditor.getValue();
+        verbose_exec(code);
+    });
+
+    // Display a helpful message and twiddle thumbs as it loads.
+    jqconsole.Write('Loading PyPy.js.\n', 'jqconsole-output');
+    jqconsole.Write('It\'s big, so this might take a while...\n\n', 'jqconsole-output');
+
+    verbose_exec(
+        'print "Welcome to PyPy.js!\\n";import sys;print "Python v"+sys.version',
+        verbose=false
+    )
+
+    $("#loading").slideUp();
+    $("#actions").slideDown("slow");
+
 });

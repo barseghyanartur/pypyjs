@@ -409,6 +409,24 @@ class EditorTests(BaseSeleniumTestCase):
             )
         )
 
+    def test_namespace(self):
+        self.assertEditor("""
+            import sys
+            print "locals:", locals()
+            print "globals:", globals()
+        """, """
+            locals: {'__name__': '__main__', '__builtins__': <module '__builtin__' (built-in)>, '__package__': None, 'sys': <module 'sys' (built-in)>}
+            globals: {'__name__': '__main__', '__builtins__': <module '__builtin__' (built-in)>, '__package__': None, 'sys': <module 'sys' (built-in)>}
+        """)
+
+        # We get a fresh PyPyJS(), so sys is not imported anymore:
+        self.assertEditor("""
+            print "locals:", locals()
+            print "globals:", globals()
+        """, """
+            locals: {'__name__': '__main__', '__builtins__': <module '__builtin__' (built-in)>}
+            globals: {'__name__': '__main__', '__builtins__': <module '__builtin__' (built-in)>}
+        """)
 
 
 if __name__ == "__main__":
