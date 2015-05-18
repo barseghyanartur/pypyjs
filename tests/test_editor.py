@@ -136,8 +136,10 @@ class EditorTests(BaseSeleniumTestCase):
         # remove #run_info text for safety catch the execution run end:
         self.driver.execute_script('$("#run_info").text("");')
 
-        # self.out('\nExecute script: %s' % script)
+        # self.out("\nExecute script: '%s'" % script)
         self.driver.execute_script("CodeMirrorEditor.setValue('%s');" % script)
+        # editor_code = self.driver.execute_script("return CodeMirrorEditor.getValue();")
+        # self.out("from editor: %r" % editor_code)
 
         # execute by clicking on the #run button
         self.driver.find_element_by_id("run").click()
