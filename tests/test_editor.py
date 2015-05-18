@@ -384,6 +384,7 @@ class EditorTests(BaseSeleniumTestCase):
             for item in sorted(os.listdir(libpath))
             if not item.startswith("_") and item.endswith(".py")
         ]
+        # module_names = ["sys", "random", "this"]
 
         good = failed = 0
         total_count = len(module_names)
@@ -393,6 +394,11 @@ class EditorTests(BaseSeleniumTestCase):
             code = "import %s;print 'OK'" % module_name
             self.execute_editor(code)
             response = self._get_console_text()
+
+            if module_name=="this":
+                if response.startswith("The Zen of Python") and response.endswith("OK"):
+                    response = "OK"
+
             if response=="OK":
                 good += 1
             elif "Error" in response:
