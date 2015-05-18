@@ -386,18 +386,11 @@ class EditorTests(BaseSeleniumTestCase):
         total_count = len(module_names)
         self.out("\nTry to import %i modules:" % total_count)
         for no, module_name in enumerate(sorted(module_names)):
-            python_script = """
-                try:
-                    import %(name)s
-                except (ImportError, NameError) as err:
-                    print "Error importing '%(name)s': %%s" %% err
-                else:
-                    print "Import '%(name)s', ok."
-            """ % {"name":module_name}
-            self.clear_console()
-            self.execute_editor(python_script)
+            self.out("\n *** %s ***" % module_name)
+            code = "import %s;print 'OK'" % module_name
+            self.execute_editor(code)
             response = self._get_console_text()
-            if "ok" in response:
+            if response=="OK":
                 good += 1
             elif "Error" in response:
                 failed += 1
@@ -408,7 +401,11 @@ class EditorTests(BaseSeleniumTestCase):
             if failed >= 10:
                 self.fail("import test failed more than 10 times. Abort the test.")
 
-        self.assertEqual(failed, 0)
+        self.assertEqual(failed, 0,
+            "Import %i modules: %i ok - %i failed" % (
+                total_count, good, failed
+            )
+        )
 
 
 
