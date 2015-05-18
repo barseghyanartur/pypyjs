@@ -128,13 +128,6 @@ class EditorTests(BaseSeleniumTestCase):
         )
         assert check
 
-    def clear_console(self):
-        self.driver.execute_script('jqconsole.Reset()')
-        self.assertConsole("")  # is empty?
-
-    def setUp(self):
-        self.clear_console()
-
     def execute_editor(self, txt, timeout=10):
         txt=txt.replace("\\", "\\\\")
         txt=txt.replace("'", "\\'")
@@ -200,28 +193,24 @@ class EditorTests(BaseSeleniumTestCase):
             single quote
         """)
     
-        self.clear_console()
         self.assertEditor("""
             print "double quote"
         """, """
             double quote
         """)
     
-        self.clear_console()
         self.assertEditor("""
             print "a 'single quote' in double quote"
         """, """
             a 'single quote' in double quote
         """)
     
-        self.clear_console()
         self.assertEditor("""
             print 'a "double quote" in single quote'
         """, """
             a "double quote" in single quote
         """)
     
-        self.clear_console()
         self.assertEditor("""
             print "a\\nnew line"
         """, """
@@ -229,7 +218,6 @@ class EditorTests(BaseSeleniumTestCase):
             new line
         """)
     
-        self.clear_console()
         self.assertEditor("""
             print "OK\\nisn't it?"
         """, """
@@ -246,7 +234,6 @@ class EditorTests(BaseSeleniumTestCase):
             two
         """)
 
-        self.clear_console()
         self.assertEditor("""
             for i in range(2):
                 print i
@@ -266,8 +253,6 @@ class EditorTests(BaseSeleniumTestCase):
             2.7.8 (?, May 17 2015, 07:02:41)
             [PyPy 2.5.0]
         """)
-
-        self.clear_console()
 
         self.assertEditor("""
             for path in sys.path:
@@ -318,7 +303,6 @@ class EditorTests(BaseSeleniumTestCase):
             s.
             {'foo': 'bar'}
         """)
-        self.clear_console()
         self.assertEditor("""
             import pickle
             print pickle.loads(pickle.dumps({'a': 'a'}))
