@@ -17,22 +17,7 @@
   <link href='css/console.css' rel='stylesheet' type='text/css'>
   <link href='css/pypyjs.css' rel='stylesheet' type='text/css'>
   <link href='css/codemirror.css' rel='stylesheet' type='text/css'>
-    <style type="text/css">
-        .CodeMirror {
-            border-top: 1px solid black; border-bottom: 1px solid black;
-        }
-        #console {
-            position: absolute;
-            width: 90%;
-            height: 400px;
-        }
-        #actions {
-            display:none;
-        }
-        .float_right {
-            float:right;
-        }
-    </style>
+  <link href='css/editor.css' rel='stylesheet' type='text/css'>
 </head>
 
 <body>
@@ -76,7 +61,7 @@ print sys.version
     </div>
     <div class="row">
         <h3 id="loading">loading...</h3>
-        <form id="actions" class="form-inline" action="JavaScript:return false;">
+        <form id="actions" class="form-inline" action="">
             <div class="form-group">
                 <button id="run" class="btn btn-default">run</button>
                 <label id="run_info"></label>
@@ -97,76 +82,8 @@ print sys.version
   <script src="js/jqconsole.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/codemirror.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/python.js"></script>
-  <script type="text/javascript">
-    jQuery( document ).ready(function( $ ) {
-        CodeMirrorEditor = CodeMirror.fromTextArea($("#editor")[0], {
-            mode: {name: "text/x-cython",
-                   version: 2,
-                   singleLineStringErrors: false},
-            lineNumbers: true,
-            indentUnit: 4,
-            matchBrackets: true
-        });
-        CodeMirrorEditor.on("changes", function() {
-            // remove last run info after code changes.
-            $("#run_info").text("");
-        });
-        $("#wrap_output").prop( "checked", false );
-        $("#wrap_output").change(function() {
-            if($(this).is(":checked")) {
-                $(".jqconsole").css("word-wrap", "break-word");
-                $(".jqconsole").css("white-space", "pre-wrap");
-            } else {
-                $(".jqconsole").css("word-wrap", "");
-                $(".jqconsole").css("white-space", "");
-            }
-        });
-    });
-
-    function verbose_exec(vm, code) {
-        $("#run_info").text("start vm...");
-        jqconsole.Reset();
-        // console.log("Start code:" + JSON.stringify(code));
-        var start_time = new Date();
-        vm.exec(code).then(function() {
-            var duration = new Date() - start_time;
-            $("#run_info").text("Run in " + duration + "ms (OK)");
-        }, function (err) {
-            // err is an instance of PyPyJS.Error
-            var duration = new Date() - start_time;
-            $("#run_info").text("Run in " + duration + "ms ("+err.name+": "+err.message+"!)");
-            vm.stderr(err.trace); // the human-readable traceback, as a string
-        });
-    }
-
-    $(function () {
-      // Global vars, for easy debugging in console.
-      window.jqconsole = $('#console').jqconsole('', '>>> ');
-      window.vm = new PyPyJS();
-      // Send all VM output to the console.
-      vm.stdout = vm.stderr = function(data) {
-        jqconsole.Write(data, 'jqconsole-output');
-      }
-      // Display a helpful message and twiddle thumbs as it loads.
-      vm.stdout('Loading PyPy.js.\n')
-      vm.stdout('It\'s big, so this might take a while...\n\n')
-      vm.ready.then(function() {
-        $("#loading").slideUp();
-        $("#actions").slideDown("slow");
-
-        $("#run_info").attr("style", "display:inline");
-        verbose_exec(vm, 'print "Welcome to PyPy.js!"');
-
-        $("#run").click(function() {
-            var code=CodeMirrorEditor.getValue();
-            verbose_exec(vm, code);
-        });
-      },
-      function(err) {
-        jqconsole.Write('ERROR: ' + err);
-      });
-    });
-  </script>
+  <script src="js/utils.js"></script>
+  <script src="js/editor.js"></script>
   <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js'></script>
 </body>
 
