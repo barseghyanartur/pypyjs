@@ -171,9 +171,15 @@ class EditorTests(BaseSeleniumTestCase):
         else:
             self.assertTrue(check)
 
+        run_info_element = self.driver.find_element_by_id("run_info")
+        run_info = run_info_element.text
+        # self.out("\n%s" % run_info)
+        return run_info
+
     def assertEditor(self, code, output):
-        self.execute_editor(code)
+        run_info = self.execute_editor(code)
         self.assertConsole(output)
+        self.assertNotIn("Failed", run_info)
 
     def test_execute_editor(self, script=None):
         self.execute_editor("""
@@ -182,6 +188,9 @@ class EditorTests(BaseSeleniumTestCase):
         self.assertConsole("""
             Hello PyPy.js!
         """)
+        console_text = self.driver.execute_script('return $("#console").text();')
+        console_text = console_text.strip()
+        self.assertEqual(console_text, "Hello PyPy.js!")
 
     def test_execute_escaping(self):
         self.assertEditor("""

@@ -95,6 +95,10 @@ print sys.version
             indentUnit: 4,
             matchBrackets: true
         });
+        CodeMirrorEditor.on("changes", function() {
+            // remove last run info after code changes.
+            $("#run_info").text("");
+        });
     });
 
     $(function () {
@@ -120,10 +124,19 @@ print sys.version
             $("#run_info").attr("style", "display:inline");
             var code=CodeMirrorEditor.getValue();
             jqconsole.Reset();
+            console.log("Start code:");
+            console.log("--------------------------");
+            console.log(JSON.stringify(code));
+            console.log("--------------------------");
             var start_time = new Date();
-            vm._execute_source(code)
-            var duration = new Date() - start_time;
-            $("#run_info").text("Run in " + duration + "ms");
+            vm.exec(code).then(function() {
+                var duration = new Date() - start_time;
+                $("#run_info").text("Run in " + duration + "ms (OK)");
+            }, function () {
+                var duration = new Date() - start_time;
+                // TODO: Display more information about the error:
+                $("#run_info").text("Run in " + duration + "ms (Failed!)");
+            });
         });
 
       },
