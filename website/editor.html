@@ -26,7 +26,7 @@
             width: 90%;
             height: 400px;
         }
-        #run_info {
+        #actions {
             display:none;
         }
     </style>
@@ -57,9 +57,9 @@
     </div>
   </div>
 
-  <div class='container'>
-
-      <textarea id="editor">print "Hello PyPy-JS!"
+<div class='container'>
+    <div class="row">
+        <textarea id="editor">print "Hello PyPy-JS!"
 print
 
 for i in range(50):
@@ -69,13 +69,23 @@ print "\n"
 
 import sys
 print sys.version
-      </textarea>
-      <h3 id="loading">loading...</h3>
-      <button id="run">run</button><div id="run_info"></div>
-      <div id="console"></div>
+        </textarea>
+    </div>
+    <div class="row">
+        <h3 id="loading">loading...</h3>
+        <form id="actions" class="form-inline" action="JavaScript:return false;">
+            <div class="form-group">
+                <button id="run" class="btn btn-default">run</button>
+                <label id="run_info"></label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id="wrap_output" /> warp output</label>
+            </div>
+        </form>
+    </div>
+    <div id="console" class="row"></div>
 
-  </div>
-
+</div>
   <script src="js/pypy.js-0.3.0/lib/Promise.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/pypy.js-0.3.0/lib/FunctionPromise.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/pypy.js-0.3.0/lib/pypy.js" type="text/javascript" charset="utf-8"></script>
@@ -86,7 +96,6 @@ print sys.version
   <script src="js/python.js"></script>
   <script type="text/javascript">
     jQuery( document ).ready(function( $ ) {
-        $("#run").hide();
         CodeMirrorEditor = CodeMirror.fromTextArea($("#editor")[0], {
             mode: {name: "text/x-cython",
                    version: 2,
@@ -98,6 +107,16 @@ print sys.version
         CodeMirrorEditor.on("changes", function() {
             // remove last run info after code changes.
             $("#run_info").text("");
+        });
+        $("#wrap_output").prop( "checked", false );
+        $("#wrap_output").change(function() {
+            if($(this).is(":checked")) {
+                $(".jqconsole").css("word-wrap", "break-word");
+                $(".jqconsole").css("white-space", "pre-wrap");
+            } else {
+                $(".jqconsole").css("word-wrap", "");
+                $(".jqconsole").css("white-space", "");
+            }
         });
     });
 
@@ -130,7 +149,7 @@ print sys.version
       vm.stdout('It\'s big, so this might take a while...\n\n')
       vm.ready.then(function() {
         $("#loading").slideUp();
-        $("#run").slideDown("slow");
+        $("#actions").slideDown("slow");
 
         $("#run_info").attr("style", "display:inline");
         verbose_exec(vm, 'print "Welcome to PyPy.js!"');
