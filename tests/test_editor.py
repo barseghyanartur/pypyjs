@@ -129,21 +129,28 @@ class EditorTests(BaseSeleniumTestCase):
         )
         assert check
 
-    def execute_editor(self, txt, timeout=10):
-        txt=txt.replace("\\", "\\\\")
-        txt=txt.replace("'", "\\'")
-        script = "\\n".join(textwrap.dedent(txt).strip().splitlines())
+    def run_code(self, code):
+        """
+        paste the given code into CodeMirror editor and click on 'run' button
+        here we don't do a WebDriverWait() call!
+        """
+        code=code.replace("\\", "\\\\")
+        code=code.replace("'", "\\'")
+        code2 = "\\n".join(textwrap.dedent(code).strip().splitlines())
 
         # remove #run_info text for safety catch the execution run end:
         self.driver.execute_script('$("#run_info").text("");')
 
         # self.out("\nExecute script: '%s'" % script)
-        self.driver.execute_script("CodeMirrorEditor.setValue('%s');" % script)
+        self.driver.execute_script("CodeMirrorEditor.setValue('%s');" % code2)
         # editor_code = self.driver.execute_script("return CodeMirrorEditor.getValue();")
         # self.out("from editor: %r" % editor_code)
 
         # execute by clicking on the #run button
         self.driver.find_element_by_id("run").click()
+
+    def execute_editor(self, code, timeout=10):
+        self.run_code(code)
 
         # Wait that #run_info is filled with e.g.: "Run in 123ms"
         try:
@@ -162,7 +169,7 @@ class EditorTests(BaseSeleniumTestCase):
                 "-----------------------------------\n"
                 "%s\n"
                 "-----------------------------------\n"
-            ) % (script, self._get_console_text())
+            ) % (code, self._get_console_text())
             self.fail(msg=msg)
         else:
             self.assertTrue(check)
@@ -334,6 +341,20 @@ class EditorTests(BaseSeleniumTestCase):
         """, """
             123.456
         """)
+
+    def test_js_alert(self):
+        self.run_code("""
+            import js
+            js.eval("alert('hello world')")
+            print "OK"
+        """)
+        alert_is_present = WebDriverWait(self.driver, timeout=5).until(
+            expected_conditions.alert_is_present()
+        )
+        self.assertTrue(alert_is_present)
+
+        alert = self.driver.switch_to.alert
+        self.assertEqual(alert.text, "hello world")
 
     def test_module_random(self):
         """
