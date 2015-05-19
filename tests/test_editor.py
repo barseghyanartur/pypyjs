@@ -255,6 +255,16 @@ class EditorTests(BaseSeleniumTestCase):
             OK
         """)
 
+    def test_standard_out_streams(self):
+        self.assertEditor("""
+            import sys
+            sys.stdout.write("to sys.stdout\\n")
+            sys.stderr.write("to sys.stderr\\n")
+        """, """
+            to sys.stdout
+            to sys.stderr
+        """)
+
     def test_sys_version(self):
         self.assertEditor("""
             import sys
