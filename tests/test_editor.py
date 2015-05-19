@@ -20,7 +20,7 @@ import unittest
 import sys
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
@@ -60,6 +60,17 @@ class BaseSeleniumTestCase(unittest.TestCase):
         try:
             cls.driver.quit()
         except:
+            pass
+
+    def tearDown(self):
+        super(BaseSeleniumTestCase, self).tearDown()
+
+        # Confirm a existing alert dialog, otherwise followed test will failed
+        # with selenium.common.exceptions.UnexpectedAlertPresentException
+        try:
+            alert = self.driver.switch_to.alert
+            alert.accept() # Confirm a alert dialog, otherwise
+        except NoAlertPresentException:
             pass
 
     def out(self, *args):
@@ -523,4 +534,8 @@ if __name__ == "__main__":
         # run a specific test, e.g.:
         # argv=("test_editor", "EditorTests",)
         # argv=("test_editor", "EditorTests.test_imports",)
+        # argv=("test_editor",
+        #     "EditorTests.test_js_alert",
+        #     "EditorTests.test_js_decorator",
+        # )
     )
