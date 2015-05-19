@@ -376,6 +376,22 @@ class EditorTests(BaseSeleniumTestCase):
             /lib/pypyjs/lib_pypy/os.py
         """)
 
+    def test_import(self):
+        """
+        test  __import__
+        """
+        self.assertEditor("""
+            try:
+                print sys.version
+            except NameError:
+                print "OK"
+            sys = __import__('sys')
+            print sys.platform
+        """, """
+            OK
+            js
+        """)
+
     def test_imports(self):
 
         # Request indirect the content of /website/js/pypy.js-0.3.0/lib/modules/index.json
