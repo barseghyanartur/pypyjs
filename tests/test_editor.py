@@ -352,9 +352,10 @@ class EditorTests(BaseSeleniumTestCase):
         """
         self.assertEditor("""
             import pprint
-            print pprint.__file__
+            pprint.pprint({"foo":range(10), "bar":range(10,20)})
         """, """
-            /lib/pypyjs/lib_pypy/pprint.py
+            {'bar': [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+             'foo': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
         """)
 
     def test_module_platform(self):
