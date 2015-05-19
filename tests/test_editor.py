@@ -130,7 +130,7 @@ class EditorTests(BaseSeleniumTestCase):
         super(EditorTests, cls).setUpClass()
         cls.driver.get(cls.editor_url)
 
-        cls.out("\nWait for init...")
+        print("\nWait for init...", file=sys.stderr)
         assert "PyPy.js" == cls.driver.title
 
         check = WebDriverWait(cls.driver, 10).until(
