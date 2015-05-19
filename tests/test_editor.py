@@ -356,6 +356,21 @@ class EditorTests(BaseSeleniumTestCase):
         alert = self.driver.switch_to.alert
         self.assertEqual(alert.text, "hello world")
 
+    def test_js_decorator(self):
+        self.assertEditor("""
+            import js
+
+            @js.Function
+            def decorated():
+                print "second"
+
+            js.globals.setTimeout(decorated, 10)
+            print "first"
+        """, """
+            first
+            second
+        """)
+
     def test_module_random(self):
         """
         https://github.com/rfk/pypyjs/issues/4
