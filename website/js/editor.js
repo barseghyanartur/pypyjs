@@ -49,7 +49,7 @@ function verbose_exec(code, verbose=true) {
         vm.exec(code).then(function() {
             if (verbose) {
                 var duration = new Date() - start_time;
-                $("#run_info").text("Run in " + duration + "ms (OK)");
+                $("#run_info").text("Run in " + human_time(duration) + " (OK)");
             }
         }, function (err) {
             // err is an instance of PyPyJS.Error
