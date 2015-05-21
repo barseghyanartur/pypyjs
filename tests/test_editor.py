@@ -322,7 +322,7 @@ class EditorTests(BaseSeleniumTestCase):
         https://github.com/rfk/pypyjs/issues/83
         """
         self.assertEditor("""
-            import cPickle as pickle
+            import cPickle as pickle # remove docstring if https://github.com/rfk/pypyjs/issues/109 is fixed
             d = pickle.dumps({'foo': 'bar'})
             print d
             print pickle.loads(d)
@@ -336,10 +336,10 @@ class EditorTests(BaseSeleniumTestCase):
             {'foo': 'bar'}
         """)
         self.assertEditor("""
-            import pickle
-            print pickle.loads(pickle.dumps({'a': 'a'}))
+            import pickle # remove docstring if https://github.com/rfk/pypyjs/issues/109 is fixed
+            print pickle.loads(pickle.dumps({'foo': 1}))
         """, """
-            {'a': 'a'}
+            {'foo': 1}
         """)
 
     def test_js_module1(self):
@@ -397,7 +397,7 @@ class EditorTests(BaseSeleniumTestCase):
         https://github.com/rfk/pypyjs/issues/4
         """
         self.assertEditor("""
-            import random
+            import random # remove docstring if https://github.com/rfk/pypyjs/issues/109 is fixed
             print random.__file__
         """, """
             /lib/pypyjs/lib_pypy/random.py
@@ -408,7 +408,7 @@ class EditorTests(BaseSeleniumTestCase):
         https://github.com/rfk/pypyjs/issues/5
         """
         self.assertEditor("""
-            import pprint
+            import pprint # remove docstring if https://github.com/rfk/pypyjs/issues/109 is fixed
             pprint.pprint({"foo":range(10), "bar":range(10,20)})
         """, """
             {'bar': [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
@@ -420,7 +420,7 @@ class EditorTests(BaseSeleniumTestCase):
         https://github.com/rfk/pypyjs/issues/6
         """
         self.assertEditor("""
-            import platform
+            import platform # remove docstring if https://github.com/rfk/pypyjs/issues/109 is fixed
             print platform.__file__
         """, """
             /lib/pypyjs/lib_pypy/platform.py
