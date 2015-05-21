@@ -450,8 +450,7 @@ class EditorTests(BaseSeleniumTestCase):
             js
         """)
 
-    def test_imports(self):
-
+    def _get_module_names(self):
         # Request indirect the content of /website/js/pypy.js-0.3.0/lib/modules/index.json
         # startup a VM:
         self.execute_editor("print 'init done'")
@@ -468,8 +467,9 @@ class EditorTests(BaseSeleniumTestCase):
             for item in sorted(os.listdir(libpath))
             if not item.startswith("_") and item.endswith(".py")
         ]
+        return module_names
+
         # module_names = ["sys", "random", "this"]
-        total_count = len(module_names)
 
         # Check if all collected module_names exist in vm._allModules
         for module_name in module_names:
@@ -477,6 +477,10 @@ class EditorTests(BaseSeleniumTestCase):
 
         self.out("\nAll %i modules found in vm._allModules" % total_count)
 
+    def test_imports1(self):
+        module_names = self._get_module_names()
+
+        total_count = len(module_names)
         good = failed = 0
         self.out("\nTry to import modules:")
         for no, module_name in enumerate(sorted(module_names)):
@@ -506,6 +510,67 @@ class EditorTests(BaseSeleniumTestCase):
             )
         )
 
+    def test_imports2(self):
+        module_names = self._get_module_names()
+
+        def format_list(l, indent=1, width=80):
+            pos = 0
+            indent_txt = " "*(indent*4)
+            txt = indent_txt
+            for i, item in enumerate(l):
+                if len(txt)-pos > width:
+                    txt += "\n%s" % indent_txt
+                    pos=len(txt)
+                txt += '"%s",' % item
+            txt = txt.rstrip(",")
+            return txt
+
+        code = """
+            from __future__ import absolute_import, print_function
+            import traceback,js,time;print("OK")
+
+            class ModuleImportTest(object):
+                # fixme: use collections.deque() here
+                module_names = [\n%(names)s
+                ]
+
+                def test_one_module(self):
+                    start_time = time.time()
+                    module_name = self.module_names.pop(0)
+                    try:
+                        print("\\ntest '%%s'..." %% module_name, end="")
+                        __import__(module_name)
+                    except ImportError:
+                        traceback.print_exc()
+                    else:
+                        print("OK")
+                    duration = time.time()-start_time
+                    print("%%.2fsec." %% duration)
+                    return bool(len(module_name))
+
+            if __name__ == "__main__":
+                m = ModuleImportTest()
+
+                @js.Function
+                def test_one_module():
+                    check = m.test_one_module()
+                    if check:
+                        js.globals.setTimeout(test_one_module, 0)
+
+                test_one_module() # bring the ball rolling
+
+        """ % {
+            "names": format_list(module_names, indent=3+2, width=80)
+        }
+        print("\n" + "-"*79)
+        print(textwrap.dedent(code))
+        print("-"*79)
+        return # Don't run this!
+
+        self.assertEditor(code, """
+            OK
+        """)
+
     def test_namespace(self):
         self.assertEditor("""
             import sys
@@ -533,7 +598,10 @@ if __name__ == "__main__":
 
         # run a specific test, e.g.:
         # argv=("test_editor", "EditorTests",)
-        # argv=("test_editor", "EditorTests.test_imports",)
+        # argv=("test_editor",
+            # "EditorTests.test_imports1",
+            # "EditorTests.test_imports2",
+        # )
         # argv=("test_editor",
         #     "EditorTests.test_js_alert",
         #     "EditorTests.test_js_decorator",
