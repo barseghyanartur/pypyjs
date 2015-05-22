@@ -511,65 +511,54 @@ class EditorTests(BaseSeleniumTestCase):
         )
 
     def test_imports2(self):
-        module_names = self._get_module_names()
-
-        def format_list(l, indent=1, width=80):
-            pos = 0
-            indent_txt = " "*(indent*4)
-            txt = indent_txt
-            for i, item in enumerate(l):
-                if len(txt)-pos > width:
-                    txt += "\n%s" % indent_txt
-                    pos=len(txt)
-                txt += '"%s",' % item
-            txt = txt.rstrip(",")
-            return txt
-
         code = """
-            from __future__ import absolute_import, print_function
-            import traceback,js,time;print("OK")
+            import js
 
-            class ModuleImportTest(object):
-                # fixme: use collections.deque() here
-                module_names = [\n%(names)s
-                ]
+            modules = js.globals.vm._allModules
 
-                def test_one_module(self):
-                    start_time = time.time()
-                    module_name = self.module_names.pop(0)
-                    try:
-                        print("\\ntest '%%s'..." %% module_name, end="")
-                        __import__(module_name)
-                    except ImportError:
-                        traceback.print_exc()
-                    else:
-                        print("OK")
-                    duration = time.time()-start_time
-                    print("%%.2fsec." %% duration)
-                    return bool(len(module_name))
+            module_names = [str(m) for m in modules]
+            print "%i modules (unfiltered)" % len(module_names)
 
-            if __name__ == "__main__":
-                m = ModuleImportTest()
+            module_names = [n for n in module_names if "_" not in n]
+            module_names = [n for n in module_names if "." not in n]
+            print "%i modules (filtered)" % len(module_names)
 
-                @js.Function
-                def test_one_module():
-                    check = m.test_one_module()
-                    if check:
-                        js.globals.setTimeout(test_one_module, 0)
+            max_failed=20
+            good = failed = 0
+            for no, module_name in enumerate(module_names):
+                print "%3i - import %-20s" % (no, module_name),
+                try:
+                    __import__(module_name)
+                except ImportError as err:
+                    print "ERROR: %s" % err
+                    failed += 1
+                else:
+                    print "OK"
+                    good += 1
 
-                test_one_module() # bring the ball rolling
+            print " --- END --- "
+        """
+        run_info = self.execute_editor(code)
 
-        """ % {
-            "names": format_list(module_names, indent=3+2, width=80)
-        }
-        print("\n" + "-"*79)
-        print(textwrap.dedent(code))
-        print("-"*79)
-        return # Don't run this!
+        console_text = self._get_console_text()
+        try:
+            self.assertIn(console_text, " --- END --- ")
+            self.assertIn(console_text, "OK")
+            self.assertNotIn(console_text, "ERROR")
+            self.assertNotIn(console_text, "Abort test")
 
-        self.assertEditor(code, """
-            OK
-        """)
+            self.assertIn("OK", run_info)
+            self.assertNotIn("Error", run_info)
+        except AssertionError as err:
+            msg=(
+                "ERROR: %s\n"
+                "-----------------------------------\n"
+                "Console output:\n"
+                "-----------------------------------\n"
+                "%s\n"
+                "-----------------------------------\n"
+            ) % (err, console_text)
+            self.fail(msg=msg)
 
     def test_namespace(self):
         self.assertEditor("""
