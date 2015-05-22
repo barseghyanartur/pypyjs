@@ -281,7 +281,7 @@ class EditorTests(BaseSeleniumTestCase):
             import sys
             print sys.version
         """, """
-            2.7.8 (?, May 17 2015, 07:02:41)
+            2.7.8 (?, May 22 2015, 10:47:53)
             [PyPy 2.5.0]
         """)
 
