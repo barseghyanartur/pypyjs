@@ -467,51 +467,16 @@ class EditorTests(BaseSeleniumTestCase):
             for item in sorted(os.listdir(libpath))
             if not item.startswith("_") and item.endswith(".py")
         ]
-        return module_names
-
         # module_names = ["sys", "random", "this"]
 
         # Check if all collected module_names exist in vm._allModules
         for module_name in module_names:
             self.assertIn(module_name, vm_all_modules)
 
-        self.out("\nAll %i modules found in vm._allModules" % total_count)
+        return module_names
 
-    def test_imports1(self):
-        module_names = self._get_module_names()
-
-        total_count = len(module_names)
-        good = failed = 0
-        self.out("\nTry to import modules:")
-        for no, module_name in enumerate(sorted(module_names)):
-            self.out("\n *** %s ***" % module_name)
-            code = "import %s;print 'OK'" % module_name
-            self.execute_editor(code)
-            response = self._get_console_text()
-
-            if module_name=="this":
-                if response.startswith("The Zen of Python") and response.endswith("OK"):
-                    response = "OK"
-
-            if response=="OK":
-                good += 1
-            elif "Error" in response:
-                failed += 1
-            else:
-                self.fail(msg=response)
-            self.out("\t%i/%i: %s" % (no, total_count, response))
-
-            if failed >= 10:
-                self.fail("import test failed more than 10 times. Abort the test.")
-
-        self.assertEqual(failed, 0,
-            "Import %i modules: %i ok - %i failed" % (
-                total_count, good, failed
-            )
-        )
-
-    def test_imports2(self):
-        code = """
+    def _get_import_test_code(self):
+        return textwrap.dedent("""
             import js
 
             modules = js.globals.vm._allModules
@@ -536,13 +501,16 @@ class EditorTests(BaseSeleniumTestCase):
                     print "OK"
                     good += 1
 
-            print " --- END --- "
-        """
+            print "%i worked imports - %i failed imports" % (good, failed)
+        """)
+
+    def _assertModuleImports(self, code):
         run_info = self.execute_editor(code)
 
         console_text = self._get_console_text()
         try:
-            self.assertIn(console_text, " --- END --- ")
+            self.assertIn(console_text, "worked imports ")
+            self.assertIn(console_text, "failed imports")
             self.assertIn(console_text, "OK")
             self.assertNotIn(console_text, "ERROR")
             self.assertNotIn(console_text, "Abort test")
@@ -559,6 +527,19 @@ class EditorTests(BaseSeleniumTestCase):
                 "-----------------------------------\n"
             ) % (err, console_text)
             self.fail(msg=msg)
+
+    def test_imports1(self):
+        code = self._get_import_test_code()
+        self._assertModuleImports(code)
+
+    def test_imports2(self):
+        code = self._get_import_test_code()
+
+        # work-a-round for: https://github.com/rfk/pypyjs/issues/127
+        module_names = self._get_module_names()
+        code += "\n".join(["# import %s" % module_name for module_name in module_names])
+
+        self._assertModuleImports(code)
 
     def test_namespace(self):
         self.assertEditor("""
@@ -587,10 +568,10 @@ if __name__ == "__main__":
 
         # run a specific test, e.g.:
         # argv=("test_editor", "EditorTests",)
-        # argv=("test_editor",
-            # "EditorTests.test_imports1",
-            # "EditorTests.test_imports2",
-        # )
+        argv=("test_editor",
+            "EditorTests.test_imports1",
+            "EditorTests.test_imports2",
+        )
         # argv=("test_editor",
         #     "EditorTests.test_js_alert",
         #     "EditorTests.test_js_decorator",
