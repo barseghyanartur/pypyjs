@@ -3,10 +3,6 @@
 """
     run unittests
     ~~~~~~~~~~~~~
-
-    run all tests:
-
-    ./runtests.py
 """
 
 from __future__ import absolute_import, print_function
@@ -18,7 +14,7 @@ import sys
 if __name__ == "__main__":
     loader = unittest.TestLoader()
 
-    this_dir = os.path.join(os.path.dirname(__file__), "tests")
+    this_dir = os.path.join(os.path.dirname(__file__))
     suite = loader.discover(this_dir)
 
     runner = unittest.TextTestRunner(
