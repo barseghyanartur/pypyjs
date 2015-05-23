@@ -1,122 +1,24 @@
 #!/usr/bin/env python
 
 """
-    TODO:
-
-    Extract/merge same code parts with:
-
-    https://github.com/jedie/pypyjs/blob/selenium/tests/test_console.py
+    selenium unitests with "editor" page
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
 from __future__ import absolute_import, print_function
 
-import difflib
 import os
-import posixpath
-import pprint
 import textwrap
-import traceback
 import unittest
 import sys
 
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, NoAlertPresentException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-
-def make_diff(block1, block2):
-    d = difflib.Differ()
-
-    block1 = block1.replace("\\n", "\\n\n").split("\n")
-    block2 = block2.replace("\\n", "\\n\n").split("\n")
-
-    diff = d.compare(block1, block2)
-
-    result = ["%2s %s\n" % (line, i) for line, i in enumerate(diff)]
-    return "".join(result)
-
-
-def website_path(sub_path):
-    path = posixpath.abspath(posixpath.join(os.path.dirname(__file__), "..", "website", sub_path))
-    assert os.path.exists(path), "path %r doesn't exists!" % path
-    return path
-
-
-class BaseSeleniumTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(BaseSeleniumTestCase, cls).setUpClass()
-        cls.driver = webdriver.Firefox()
-        cls.driver.set_window_size(800, 900)
-        cls.driver.set_window_position(0, 0)
-        path = website_path("editor.html")
-        cls.editor_url = "file://%s" % path
-
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            cls.driver.quit()
-        except:
-            pass
-
-    def tearDown(self):
-        super(BaseSeleniumTestCase, self).tearDown()
-
-        # Confirm a existing alert dialog, otherwise followed test will failed
-        # with selenium.common.exceptions.UnexpectedAlertPresentException
-        try:
-            alert = self.driver.switch_to.alert
-            alert.accept() # Confirm a alert dialog, otherwise
-        except NoAlertPresentException:
-            pass
-
-    def out(self, *args):
-        print(*args, file=sys.stderr)
-
-    def _verbose_assertion_error(self, driver):
-        self.out("\n")
-        self.out("*" * 79)
-        traceback.print_exc()
-        self.out(" -" * 40)
-
-        page_source = driver.page_source
-
-        if not page_source.strip():
-            self.out("[page coure is empty!]")
-        else:
-            page_source = "\n".join([line for line in page_source.splitlines() if line.rstrip()])
-            self.out(page_source)
-
-        self.out("*" * 79)
-        self.out("\n")
-        raise
-
-    def _get_console_text(self):
-        console = self.driver.find_element_by_id("console")
-        console_text = console.text
-        return console_text.strip()
-
-    def assertConsole(self, txt):
-        console_text = self._get_console_text()
-        
-        txt = textwrap.dedent(txt).strip()
-        msg = textwrap.dedent("""
-
-            *** Console output is: ***
-            %s
-
-            *** the reference: ***
-            %s
-
-            *** diff: ***
-            %s
-        """) % (
-            console_text, txt, make_diff(console_text, txt)
-        )
-        self.assertEqual(console_text, txt, msg=msg)
+from tests.test_utils.test_cases import BaseSeleniumTestCase
+from tests.test_utils.utils import website_url_path
 
 
 class EditorTests(BaseSeleniumTestCase):
@@ -128,9 +30,10 @@ class EditorTests(BaseSeleniumTestCase):
     @classmethod
     def setUpClass(cls):
         super(EditorTests, cls).setUpClass()
+        cls.driver.set_window_size(800, 900) # min.size to see the complete editor & console
         cls.driver.get(cls.editor_url)
 
-        print("\nWait for init...", file=sys.stderr)
+        print("\nWait for init 'PyPy.js editor'...", file=sys.stderr)
         assert "PyPy.js" == cls.driver.title
 
         check = WebDriverWait(cls.driver, 10).until(
@@ -461,7 +364,7 @@ class EditorTests(BaseSeleniumTestCase):
         # self.out(pprint.pformat(vm_all_modules))
 
         # hack a list of available modules:
-        libpath = website_path("js/pypy.js-0.3.0/lib/modules")
+        libpath = os.path.normpath(website_url_path("js/pypy.js-0.3.0/lib/modules"))
         module_names = [
             os.path.splitext(item)[0]
             for item in sorted(os.listdir(libpath))
