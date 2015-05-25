@@ -12,17 +12,12 @@ import unittest
 import sys
 
 
-# FIXME: Ugly hack:
-sys.path.insert(0,
-    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-)
-
-
 if __name__ == "__main__":
     loader = unittest.TestLoader()
 
-    this_dir = os.path.join(os.path.dirname(__file__))
-    suite = loader.discover(this_dir)
+    start_dir = os.path.join(os.path.dirname(__file__))
+    top_level_dir = os.path.join(start_dir, "..")
+    suite = loader.discover(start_dir, top_level_dir=top_level_dir)
 
     runner = unittest.TextTestRunner(
         verbosity=2,
