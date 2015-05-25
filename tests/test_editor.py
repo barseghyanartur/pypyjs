@@ -17,8 +17,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from tests.test_utils.test_cases import BaseSeleniumTestCase
-from tests.test_utils.utils import website_url_path
+if __package__ != "tests":
+    # Hack to make it possible to run this file directly
+    __package__="tests"
+    sys.path.insert(0,
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+    import tests
+
+from .test_utils.test_cases import BaseSeleniumTestCase
+from .test_utils.utils import website_url_path
 
 
 class EditorTests(BaseSeleniumTestCase):

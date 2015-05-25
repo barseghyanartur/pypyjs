@@ -11,13 +11,22 @@ from __future__ import absolute_import, print_function
 import textwrap
 import unittest
 import sys
+import os
 
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from tests.test_utils.test_cases import BaseSeleniumTestCase
+if __package__ != "tests":
+    # Hack to make it possible to run this file directly
+    __package__="tests"
+    sys.path.insert(0,
+        os.path.join(os.path.dirname(__file__), "..")
+    )
+    import tests
+
+from .test_utils.test_cases import BaseSeleniumTestCase
 
 
 class PyPyJSSeleniumTests(BaseSeleniumTestCase):
