@@ -364,7 +364,7 @@ class EditorTests(BaseSeleniumTestCase):
         # self.out(pprint.pformat(vm_all_modules))
 
         # hack a list of available modules:
-        libpath = os.path.normpath(website_url_path("js/pypy.js-0.3.0/lib/modules"))
+        libpath = os.path.normpath(website_url_path("js/pypy.js-0.3.1/lib/modules"))
         module_names = [
             os.path.splitext(item)[0]
             for item in sorted(os.listdir(libpath))
