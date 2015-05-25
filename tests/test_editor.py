@@ -399,7 +399,6 @@ class EditorTests(BaseSeleniumTestCase):
             module_names = [n for n in module_names if "." not in n]
             print "%i modules (filtered)" % len(module_names)
 
-            max_failed=20
             good = failed = 0
             for no, module_name in enumerate(module_names):
                 print "%3i - import %-20s" % (no, module_name),
