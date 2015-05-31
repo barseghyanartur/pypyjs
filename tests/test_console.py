@@ -1,18 +1,32 @@
 #!/usr/bin/env python
 
 """
-    selenium unitests with "console" page
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Quick HowTo setup a test environment and run this file:
 
+    ~ $ virtualenv pypyjs_env
+    ~ $ cd pypyjs_env/
+    ~/pypyjs_env $ source bin/activate
+    (pypyjs_env)~/pypyjs_env $ pip install --upgrade pip
+    (pypyjs_env)~/pypyjs_env $ pip install selenium
+    (pypyjs_env)~/pypyjs_env $ pip install -e git+https://github.com/pypyjs/pypyjs.git#egg=pypyjs
+    (pypyjs_env)~/pypyjs_env $ cd src/pypyjs/
+    (pypyjs_env)~/pypyjs_env/src/pypyjs$ ./runtests.py
+
+    TODO:
+     * merge same code parts with 'editor' branch after both branches are merges
 """
 
 from __future__ import absolute_import, print_function
 
+import difflib
+import os
+import posixpath
 import textwrap
+import traceback
 import unittest
 import sys
-import os
 
+from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -173,6 +187,16 @@ class PyPyJSSeleniumTests(BaseSeleniumTestCase):
             to sys.stdout
             to sys.stderr
         """)
+
+    def test_pystone_imports_and_runs(self):
+        self.assertExecConsole("""
+            from test import pystone
+            pystone.main(1)
+        """, """
+            Pystone(1.1) time for 1 passes = 0
+            This machine benchmarks at 0 pystones/second
+        """)
+
 
 
 if __name__ == "__main__":
