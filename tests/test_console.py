@@ -189,13 +189,15 @@ class PyPyJSSeleniumTests(BaseSeleniumTestCase):
         """)
 
     def test_pystone_imports_and_runs(self):
-        self.assertExecConsole("""
-            from test import pystone
+        self.clear_console()
+        self._execute_code("""
+            from test import pystone; # work-a-round for https://github.com/pypyjs/pypyjs/issues/109
             pystone.main(1)
-        """, """
-            Pystone(1.1) time for 1 passes = 0
-            This machine benchmarks at 0 pystones/second
         """)
+        console_text = self._get_console_text()
+        self.assertIn("Pystone(1.1) time for 1 passes = 0", console_text)
+        self.assertIn("This machine benchmarks at", console_text)
+        self.assertIn("pystones/second", console_text)
 
 
 
